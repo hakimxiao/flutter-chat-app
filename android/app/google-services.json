@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "606301812782",
+    "project_id": "latihan-flutter-93e64",
+    "storage_bucket": "latihan-flutter-93e64.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:606301812782:android:4cab8ccc1ec243f67b07bf",
+        "android_client_info": {
+          "package_name": "com.example.chatapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBR7f094Aat0XDbLpPFRNpK6KhqARPXU6w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
