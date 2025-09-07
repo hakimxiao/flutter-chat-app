@@ -1,3 +1,4 @@
+import 'package:chatapp/app/controllers/auth_controller.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -17,6 +18,8 @@ class MyApp extends StatelessWidget {
 
   final Future<FirebaseApp> _initialization = Firebase.initializeApp();
 
+  final authC = Get.put(AuthController(), permanent: true);
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -28,13 +31,19 @@ class MyApp extends StatelessWidget {
 
         if (snapshot.connectionState == ConnectionState.done) {
           return FutureBuilder(
-            future: Future.delayed(Duration(seconds: 5)),
+            future: Future.delayed(Duration(seconds: 4)),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {
-                return GetMaterialApp(
-                  title: "ChatApp",
-                  initialRoute: AppPages.INITIAL,
-                  getPages: AppPages.routes,
+                return Obx(
+                  () => GetMaterialApp(
+                    title: "ChatApp",
+                    initialRoute: authC.isSkip.isTrue
+                        ? authC.isAuth.isTrue
+                              ? Routes.HOME
+                              : Routes.LOGIN
+                        : Routes.INTRODUCTION,
+                    getPages: AppPages.routes,
+                  ),
                 );
               }
               return SplashScreen();
