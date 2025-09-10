@@ -1,3 +1,4 @@
+import 'package:chatapp/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -5,19 +6,78 @@ import 'package:get/get.dart';
 import '../controllers/home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
-  const HomeView({super.key});
+  HomeView({super.key});
+
+  final List<Widget> myChats = List.generate(
+    20,
+    (index) => ListTile(
+      onTap: () => Get.toNamed(Routes.CHAT_ROOM),
+      leading: CircleAvatar(
+        radius: 30,
+        backgroundColor: Colors.black26,
+        child: Image.asset('assets/logo/noimage.png', fit: BoxFit.cover),
+      ),
+      title: Text(
+        'Orang ke-${index + 1}',
+        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+      ),
+      subtitle: Text(
+        'Status Orang ke-${index + 1}',
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+      ),
+      trailing: Chip(label: Text("3")),
+    ),
+  ).reversed.toList();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('HomeView'),
-        centerTitle: true,
+      body: Column(
+        children: [
+          Material(
+            elevation: 5,
+            child: Container(
+              margin: EdgeInsets.only(top: context.mediaQueryPadding.top),
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.black38)),
+              ),
+              padding: EdgeInsets.fromLTRB(20, 30, 20, 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Chats",
+                    style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+                  ),
+                  Material(
+                    color: Colors.deepPurple[100],
+                    borderRadius: BorderRadius.circular(50),
+                    child: InkWell(
+                      onTap: () => Get.toNamed(Routes.PROFILE),
+                      borderRadius: BorderRadius.circular(50),
+                      child: Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Icon(Icons.person, size: 35),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          Expanded(
+            child: ListView.builder(
+              padding: EdgeInsets.zero,
+              itemCount: myChats.length,
+              itemBuilder: (context, index) => myChats[index],
+            ),
+          ),
+        ],
       ),
-      body: const Center(
-        child: Text(
-          'HomeView is working',
-          style: TextStyle(fontSize: 20),
-        ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Get.toNamed(Routes.SEARCH_FRIEND),
+        child: Icon(Icons.search),
       ),
     );
   }
