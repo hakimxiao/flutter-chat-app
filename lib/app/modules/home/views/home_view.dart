@@ -65,7 +65,6 @@ class HomeView extends GetView<HomeController> {
               ),
             ),
           ),
-
           Expanded(
             child: ListView.builder(
               padding: EdgeInsets.zero,

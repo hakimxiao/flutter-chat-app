@@ -42,7 +42,7 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.SEARCH_FRIEND,
-      page: () => const SearchFriendView(),
+      page: () => SearchFriendView(),
       binding: SearchFriendBinding(),
     ),
   ];
