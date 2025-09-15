@@ -12,6 +12,8 @@ import '../modules/profile/bindings/profile_binding.dart';
 import '../modules/profile/views/profile_view.dart';
 import '../modules/search_friend/bindings/search_friend_binding.dart';
 import '../modules/search_friend/views/search_friend_view.dart';
+import '../modules/update_status/bindings/update_status_binding.dart';
+import '../modules/update_status/views/update_status_view.dart';
 
 part 'app_routes.dart';
 
@@ -44,6 +46,11 @@ class AppPages {
       name: _Paths.SEARCH_FRIEND,
       page: () => SearchFriendView(),
       binding: SearchFriendBinding(),
+    ),
+    GetPage(
+      name: _Paths.UPDATE_STATUS,
+      page: () => const UpdateStatusView(),
+      binding: UpdateStatusBinding(),
     ),
   ];
 }
