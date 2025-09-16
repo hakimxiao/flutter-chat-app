@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 
 import '../modules/chat_room/bindings/chat_room_binding.dart';
 import '../modules/chat_room/views/chat_room_view.dart';
+import '../modules/chnge_profile/bindings/chnge_profile_binding.dart';
+import '../modules/chnge_profile/views/chnge_profile_view.dart';
 import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
 import '../modules/introduction/bindings/introduction_binding.dart';
@@ -51,6 +53,11 @@ class AppPages {
       name: _Paths.UPDATE_STATUS,
       page: () => const UpdateStatusView(),
       binding: UpdateStatusBinding(),
+    ),
+    GetPage(
+      name: _Paths.CHNGE_PROFILE,
+      page: () => const ChngeProfileView(),
+      binding: ChngeProfileBinding(),
     ),
   ];
 }
