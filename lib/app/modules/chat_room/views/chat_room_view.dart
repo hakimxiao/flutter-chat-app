@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:flutter/foundation.dart' as foundation;
 
 import 'package:get/get.dart';
 
@@ -6,6 +8,7 @@ import '../controllers/chat_room_controller.dart';
 
 class ChatRoomView extends GetView<ChatRoomController> {
   const ChatRoomView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,9 +20,9 @@ class ChatRoomView extends GetView<ChatRoomController> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                SizedBox(width: 5),
-                Icon(Icons.arrow_back),
-                SizedBox(width: 5),
+                const SizedBox(width: 5),
+                const Icon(Icons.arrow_back),
+                const SizedBox(width: 5),
                 CircleAvatar(
                   radius: 25,
                   backgroundColor: Colors.grey[200],
@@ -30,7 +33,7 @@ class ChatRoomView extends GetView<ChatRoomController> {
           ),
         ),
         backgroundColor: Colors.deepPurpleAccent[100],
-        title: Column(
+        title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -42,53 +45,109 @@ class ChatRoomView extends GetView<ChatRoomController> {
         ),
         centerTitle: false,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SizedBox(
-              child: ListView(
-                children: [ItemChat(isSender: true), ItemChat(isSender: false)],
+      body: WillPopScope(
+        onWillPop: () {
+          if (controller.isShowEmoji.isTrue) {
+            controller.isShowEmoji.value = false;
+          } else {
+            Navigator.pop(context);
+          }
+          return Future.value(false);
+        },
+        child: Column(
+          children: [
+            Expanded(
+              child: SizedBox(
+                child: ListView(
+                  children: const [
+                    ItemChat(isSender: true),
+                    ItemChat(isSender: false),
+                  ],
+                ),
               ),
             ),
-          ),
-          Container(
-            margin: EdgeInsets.only(bottom: context.mediaQueryPadding.bottom),
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            width: Get.width,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        prefixIcon: IconButton(
-                          onPressed: () {},
-                          icon: Icon(Icons.emoji_emotions_outlined),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(100),
+            Container(
+              margin: EdgeInsets.only(
+                bottom: controller.isShowEmoji.isTrue
+                    ? 5
+                    : context.mediaQueryPadding.bottom,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              width: Get.width,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      child: TextField(
+                        controller: controller.chatC,
+                        focusNode: controller.focusNode,
+                        decoration: InputDecoration(
+                          prefixIcon: IconButton(
+                            onPressed: () {
+                              controller.focusNode.unfocus();
+                              controller.isShowEmoji.toggle();
+                            },
+                            icon: const Icon(Icons.emoji_emotions_outlined),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(100),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                SizedBox(width: 10),
-                Material(
-                  borderRadius: BorderRadius.circular(100),
-                  color: Colors.purple[100],
-                  child: InkWell(
-                    onTap: () {},
-                    child: Padding(
-                      padding: const EdgeInsets.all(13),
-                      child: Icon(Icons.send),
+                  const SizedBox(width: 10),
+                  Material(
+                    borderRadius: BorderRadius.circular(100),
+                    color: Colors.purple[100],
+                    child: InkWell(
+                      onTap: () {},
+                      child: const Padding(
+                        padding: EdgeInsets.all(13),
+                        child: Icon(Icons.send),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Obx(
+              () => Offstage(
+                offstage: !controller.isShowEmoji.value,
+                child: SizedBox(
+                  height: 325,
+                  child: EmojiPicker(
+                    onEmojiSelected: (category, emoji) {
+                      controller.addEmojiToChat(emoji);
+                    },
+                    onBackspacePressed: () {
+                      controller.deleteEmoji();
+                    },
+                    config: Config(
+                      height: 256,
+                      checkPlatformCompatibility: true,
+                      emojiViewConfig: EmojiViewConfig(
+                        // Issue: https://github.com/flutter/flutter/issues/28894
+                        emojiSizeMax:
+                            28 *
+                            (foundation.defaultTargetPlatform ==
+                                    TargetPlatform.iOS
+                                ? 1.2
+                                : 1.0),
+                      ),
+                      viewOrderConfig: const ViewOrderConfig(),
+                      skinToneConfig: const SkinToneConfig(),
+                      categoryViewConfig: const CategoryViewConfig(),
+                      bottomActionBarConfig: const BottomActionBarConfig(),
+                      searchViewConfig: const SearchViewConfig(),
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -102,7 +161,7 @@ class ItemChat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
       alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
       child: Column(
         crossAxisAlignment: isSender
@@ -112,26 +171,26 @@ class ItemChat extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               borderRadius: isSender
-                  ? BorderRadius.only(
+                  ? const BorderRadius.only(
                       topLeft: Radius.circular(15),
                       topRight: Radius.circular(15),
                       bottomLeft: Radius.circular(15),
                     )
-                  : BorderRadius.only(
+                  : const BorderRadius.only(
                       topLeft: Radius.circular(15),
                       topRight: Radius.circular(15),
                       bottomRight: Radius.circular(15),
                     ),
               color: Colors.deepPurpleAccent[200],
             ),
-            padding: EdgeInsets.all(15),
-            child: Text(
+            padding: const EdgeInsets.all(15),
+            child: const Text(
               'hsdhaeuhueafuyieg',
               style: TextStyle(color: Colors.white),
             ),
           ),
-          SizedBox(height: 5),
-          Text('18:22'),
+          const SizedBox(height: 5),
+          const Text('18:22'),
         ],
       ),
     );
