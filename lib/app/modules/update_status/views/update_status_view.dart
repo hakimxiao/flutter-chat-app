@@ -10,7 +10,6 @@ class UpdateStatusView extends GetView<UpdateStatusController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: () {}, icon: Icon(Icons.arrow_back)),
         backgroundColor: Colors.deepPurpleAccent[100],
         title: const Text('Update Status'),
         centerTitle: true,
@@ -20,6 +19,7 @@ class UpdateStatusView extends GetView<UpdateStatusController> {
         child: Column(
           children: [
             TextField(
+              controller: controller.statusC,
               decoration: InputDecoration(
                 label: Text("Status"),
                 border: OutlineInputBorder(

@@ -35,6 +35,7 @@ class HomeView extends GetView<HomeController> {
       body: Column(
         children: [
           Material(
+            color: Colors.deepPurple[100],
             elevation: 5,
             child: Container(
               margin: EdgeInsets.only(top: context.mediaQueryPadding.top),

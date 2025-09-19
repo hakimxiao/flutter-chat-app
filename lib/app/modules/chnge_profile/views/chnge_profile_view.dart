@@ -11,7 +11,6 @@ class ChngeProfileView extends GetView<ChngeProfileController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: () {}, icon: Icon(Icons.arrow_back)),
         backgroundColor: Colors.deepPurpleAccent[100],
         title: const Text('Change Profile'),
         centerTitle: true,

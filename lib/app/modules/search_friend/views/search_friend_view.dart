@@ -50,6 +50,7 @@ class SearchFriendView extends GetView<SearchFriendController> {
             child: Align(
               alignment: Alignment.bottomCenter,
               child: TextField(
+                controller: controller.searchC,
                 decoration: InputDecoration(
                   fillColor: Colors.white,
                   filled: true,

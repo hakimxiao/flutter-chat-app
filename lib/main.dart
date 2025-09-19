@@ -30,30 +30,25 @@ class MyApp extends StatelessWidget {
         }
 
         if (snapshot.connectionState == ConnectionState.done) {
-          return GetMaterialApp(
-            title: "ChatApp",
-            initialRoute: Routes.CHAT_ROOM,
-            getPages: AppPages.routes,
+          return FutureBuilder(
+            future: Future.delayed(Duration(seconds: 4)),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                return Obx(
+                  () => GetMaterialApp(
+                    title: "ChatApp",
+                    initialRoute: authC.isSkip.isTrue
+                        ? authC.isAuth.isTrue
+                              ? Routes.HOME
+                              : Routes.LOGIN
+                        : Routes.INTRODUCTION,
+                    getPages: AppPages.routes,
+                  ),
+                );
+              }
+              return SplashScreen();
+            },
           );
-          // return FutureBuilder(
-          //   future: Future.delayed(Duration(seconds: 4)),
-          //   builder: (context, snapshot) {
-          //     if (snapshot.connectionState == ConnectionState.done) {
-          //       return Obx(
-          //         () => GetMaterialApp(
-          //           title: "ChatApp",
-          //           initialRoute: authC.isSkip.isTrue
-          //               ? authC.isAuth.isTrue
-          //                     ? Routes.HOME
-          //                     : Routes.LOGIN
-          //               : Routes.INTRODUCTION,
-          //           getPages: AppPages.routes,
-          //         ),
-          //       );
-          //     }
-          //     return SplashScreen();
-          //   },
-          // );
         }
 
         return LoadingScreen();
