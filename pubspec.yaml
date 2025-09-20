@@ -36,12 +36,12 @@ dependencies:
   cupertino_icons: ^1.0.8
   get: ^4.7.2
   firebase_core: ^4.1.0
-  google_sign_in: ^7.1.1
   firebase_auth: ^6.0.2
   lottie: ^3.3.1
   introduction_screen: ^4.0.0
   avatar_glow: ^2.0.2
   emoji_picker_flutter: ^4.3.0
+  google_sign_in: ^6.1.5
 
 dev_dependencies:
   flutter_test:

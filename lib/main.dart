@@ -18,8 +18,6 @@ class MyApp extends StatelessWidget {
 
   final Future<FirebaseApp> _initialization = Firebase.initializeApp();
 
-  final authC = Get.put(AuthController(), permanent: true);
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -30,6 +28,9 @@ class MyApp extends StatelessWidget {
         }
 
         if (snapshot.connectionState == ConnectionState.done) {
+          // ✅ Pindahkan inisialisasi AuthController ke sini
+          final authC = Get.put(AuthController(), permanent: true);
+
           return FutureBuilder(
             future: Future.delayed(Duration(seconds: 4)),
             builder: (context, snapshot) {

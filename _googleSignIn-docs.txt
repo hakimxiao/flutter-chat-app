@@ -1,0 +1,239 @@
+Mantap 🎉 sudah lancar.
+Sekarang saya jelaskan **step by step** alur dan prosesnya, dengan bahasa sederhana seperti dokumentasi resmi, tapi lebih mudah dipahami. Kita bagi dua bagian: `auth_controller.dart` dan `main.dart`.
+
+---
+
+# 🔑 Dokumentasi AuthController
+
+### 1. Import Library
+
+```dart
+import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:chatapp/app/routes/app_pages.dart';
+```
+
+* **GetX** → state management & navigasi.
+* **GoogleSignIn** → login dengan akun Google.
+* **FirebaseAuth** → autentikasi di Firebase.
+* **AppPages** → daftar route (halaman) aplikasi.
+
+---
+
+### 2. Buat Controller
+
+```dart
+class AuthController extends GetxController {
+  final firebaseAuth = FirebaseAuth.instance;
+  final Rxn<User> firebaseUser = Rxn<User>();
+
+  var isSkip = false.obs;
+  var isAuth = false.obs;
+
+  late GoogleSignIn _googleSignIn;
+```
+
+* `firebaseAuth` → koneksi ke Firebase Authentication.
+* `firebaseUser` → menyimpan user Firebase yang sedang login.
+* `isSkip` → apakah user skip intro.
+* `isAuth` → apakah user sedang login.
+* `_googleSignIn` → objek untuk Google Sign-In.
+
+---
+
+### 3. Inisialisasi
+
+```dart
+  @override
+  void onInit() {
+    super.onInit();
+    _googleSignIn = GoogleSignIn();
+
+    firebaseAuth.authStateChanges().listen((user) {
+      firebaseUser.value = user;
+      isAuth.value = user != null;
+    });
+  }
+```
+
+* `GoogleSignIn()` dibuat sekali.
+* `authStateChanges()` dari Firebase dipantau:
+
+  * Jika ada user → `isAuth = true`.
+  * Jika logout → `isAuth = false`.
+
+Artinya status login selalu otomatis tersinkronisasi.
+
+---
+
+### 4. Login
+
+```dart
+  Future<void> login() async {
+    try {
+      await _googleSignIn.signOut();
+
+      final GoogleSignInAccount? account = await _googleSignIn.signIn();
+      if (account == null) return;
+
+      final GoogleSignInAuthentication auth = await account.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: auth.accessToken,
+        idToken: auth.idToken,
+      );
+
+      await firebaseAuth.signInWithCredential(credential);
+
+      Get.offAllNamed(Routes.HOME);
+    } catch (e) {
+      debugPrint("Google SignIn error: $e");
+    }
+  }
+```
+
+**Proses login step by step:**
+
+1. `signOut()` → clear dulu jika ada session lama.
+2. `signIn()` → buka pop-up pilih akun Google.
+3. `account.authentication` → ambil `idToken` & `accessToken`.
+4. `GoogleAuthProvider.credential(...)` → ubah jadi credential Firebase.
+5. `firebaseAuth.signInWithCredential(...)` → login ke Firebase.
+6. Navigasi ke **HOME** jika sukses.
+
+---
+
+### 5. Logout
+
+```dart
+  Future<void> logout() async {
+    try {
+      await firebaseAuth.signOut();
+      await _googleSignIn.signOut();
+    } catch (e) {
+      debugPrint("Logout error: $e");
+    } finally {
+      isAuth.value = false;
+      Get.offAllNamed(Routes.LOGIN);
+    }
+  }
+```
+
+* Sign out dari Firebase.
+* Sign out dari Google.
+* Reset status `isAuth = false`.
+* Navigasi ke **LOGIN**.
+
+---
+
+# 🔑 Dokumentasi main.dart
+
+### 1. Inisialisasi Flutter & Firebase
+
+```dart
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(MyApp());
+}
+```
+
+* `WidgetsFlutterBinding.ensureInitialized()` wajib dipanggil sebelum `Firebase.initializeApp()`.
+* Jalankan aplikasi lewat `MyApp`.
+
+---
+
+### 2. Buat Class MyApp
+
+```dart
+class MyApp extends StatelessWidget {
+  final Future<FirebaseApp> _initialization = Firebase.initializeApp();
+```
+
+* `_initialization` → proses async inisialisasi Firebase.
+
+---
+
+### 3. FutureBuilder untuk Firebase
+
+```dart
+return FutureBuilder(
+  future: _initialization,
+  builder: (context, snapshot) {
+    if (snapshot.hasError) {
+      return ErrorScreen();
+    }
+
+    if (snapshot.connectionState == ConnectionState.done) {
+      final authC = Get.put(AuthController(), permanent: true);
+```
+
+* **Jika error** → tampilkan `ErrorScreen`.
+* **Jika selesai** → Firebase siap → baru `AuthController` dimasukkan ke GetX (`Get.put`).
+
+---
+
+### 4. FutureBuilder tambahan (Splash Screen)
+
+```dart
+      return FutureBuilder(
+        future: Future.delayed(Duration(seconds: 4)),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            return Obx(
+              () => GetMaterialApp(
+                title: "ChatApp",
+                initialRoute: authC.isSkip.isTrue
+                    ? authC.isAuth.isTrue
+                        ? Routes.HOME
+                        : Routes.LOGIN
+                    : Routes.INTRODUCTION,
+                getPages: AppPages.routes,
+              ),
+            );
+          }
+          return SplashScreen();
+        },
+      );
+```
+
+* Delay 4 detik untuk menampilkan splash screen.
+* Setelah delay selesai:
+
+  * Jika user **skip intro** → cek apakah **sudah login**:
+
+    * Jika ya → langsung `HOME`.
+    * Jika tidak → `LOGIN`.
+  * Jika belum skip intro → tampilkan `INTRODUCTION`.
+
+Semua dipantau pakai **Obx** agar update otomatis ketika `isSkip` atau `isAuth` berubah.
+
+---
+
+### 5. Default Loading
+
+```dart
+return LoadingScreen();
+```
+
+* Jika Firebase masih loading → tampilkan `LoadingScreen`.
+
+---
+
+# ⚡️ Ringkasannya
+
+1. **main.dart**
+
+   * Inisialisasi Firebase.
+   * Setelah selesai, daftarkan `AuthController` di GetX.
+   * Tampilkan splash → lalu tentukan halaman awal (`HOME`, `LOGIN`, atau `INTRODUCTION`).
+
+2. **auth\_controller.dart**
+
+   * Menyediakan fungsi login/logout dengan Google.
+   * Sinkronisasi status login lewat Firebase.
+   * Kendali navigasi (HOME saat login, LOGIN saat logout).
+
+---
+
+Apakah kamu mau saya bikinkan diagram alur (flowchart) kecil supaya lebih gampang membayangkan step login/logout ini?
