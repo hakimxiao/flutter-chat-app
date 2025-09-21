@@ -41,6 +41,7 @@ class AuthController extends GetxController {
       await firebaseAuth.signInWithCredential(credential);
 
       Get.offAllNamed(Routes.HOME);
+      debugPrint(credential.toString());
     } catch (e) {
       debugPrint("Google SignIn error: $e");
     }
