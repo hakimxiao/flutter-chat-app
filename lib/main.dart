@@ -2,13 +2,15 @@ import 'package:chatapp/app/controllers/auth_controller.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 
 import 'package:chatapp/app/utils/error_screen.dart';
 import 'package:chatapp/app/utils/loading_screen.dart';
 import 'package:chatapp/app/utils/splash_screen.dart';
 import 'app/routes/app_pages.dart';
 
-void main() {
+void main() async {
+  await GetStorage.init();
   WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }
@@ -28,7 +30,6 @@ class MyApp extends StatelessWidget {
         }
 
         if (snapshot.connectionState == ConnectionState.done) {
-          // ✅ Pindahkan inisialisasi AuthController ke sini
           final authC = Get.put(AuthController(), permanent: true);
 
           return FutureBuilder(
@@ -38,7 +39,7 @@ class MyApp extends StatelessWidget {
                 return Obx(
                   () => GetMaterialApp(
                     title: "ChatApp",
-                    initialRoute: authC.isSkip.isTrue
+                    initialRoute: authC.isSkipIntro.isTrue
                         ? authC.isAuth.isTrue
                               ? Routes.HOME
                               : Routes.LOGIN
@@ -47,7 +48,10 @@ class MyApp extends StatelessWidget {
                   ),
                 );
               }
-              return SplashScreen();
+              return FutureBuilder(
+                future: authC.firstInitialize(),
+                builder: (context, snapshot) => SplashScreen(),
+              );
             },
           );
         }
