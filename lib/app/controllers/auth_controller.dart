@@ -1,3 +1,4 @@
+import 'package:chatapp/app/data/models/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
@@ -13,6 +14,8 @@ class AuthController extends GetxController {
   GoogleSignIn _googleSignIn = GoogleSignIn();
   GoogleSignInAccount? _currentUser;
   UserCredential? userCredential;
+
+  Usermodel user = Usermodel();
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
@@ -30,10 +33,58 @@ class AuthController extends GetxController {
     });
   }
 
+  Future<bool> skipIntro() async {
+    final box = GetStorage();
+    if (box.read('skipIntro') != null || box.read('skipIntro') == true) {
+      return true;
+    }
+    return false;
+  }
+
   Future<bool> autoLogin() async {
     try {
       final isSignIn = await _googleSignIn.isSignedIn();
       if (isSignIn) {
+        await _googleSignIn.signInSilently().then(
+              (value) => _currentUser = value,
+            );
+        final googleAuth = await _currentUser!.authentication;
+
+        final credential = GoogleAuthProvider.credential(
+          idToken: googleAuth.idToken,
+          accessToken: googleAuth.accessToken,
+        );
+
+        await FirebaseAuth.instance.signInWithCredential(credential).then(
+              (value) => userCredential = value,
+            );
+
+        debugPrint("USER CREDENTIALS DARI AUTO LOGIN : $userCredential");
+
+        // # masukkan data ke firebase
+        CollectionReference users = firestore.collection('users');
+
+        await users.doc(_currentUser!.email).update({
+          "lastSignInTime":
+              userCredential!.user!.metadata.lastSignInTime!.toIso8601String(),
+        });
+        debugPrint("Data pengguna lama berhasil diupdate.");
+
+        // # Mengisi model dengan data user yang ada di Firestore.
+        final currentUser = await users.doc(_currentUser!.email).get();
+        final currentUserData = currentUser.data() as Map<String, dynamic>;
+
+        user = Usermodel(
+          uid: currentUserData["uid"],
+          name: currentUserData["name"],
+          email: currentUserData["email"],
+          photoUrl: currentUserData["photoUrl"],
+          status: currentUserData["status"],
+          creationTime: currentUserData["creationTime"],
+          lastSignInTime: currentUserData["lastSignInTime"],
+          updatedTime: currentUserData["updatedTime"],
+        );
+
         return true;
       }
       return false;
@@ -43,90 +94,103 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<bool> skipIntro() async {
-    try {
-      final box = GetStorage();
-      if (box.read('skipIntro') == true) {
-        return true;
-      }
-      return false;
-    } catch (e) {
-      debugPrint("Terjadi error skipIntro: $e");
-      return false;
-    }
-  }
-
   Future<void> login() async {
     try {
+      // Ini untuk handle kebocoran data user sebelum login
       await _googleSignIn.signOut();
-      _currentUser = await _googleSignIn.signIn();
 
-      if (_currentUser != null) {
-        debugPrint('BERHASIL MENDAPATKAN AKUN GOOGLE: ${_currentUser!.email}');
+      // Ini digunakan untuk mendapatkan google account
+      await _googleSignIn.signIn().then(
+            (value) => _currentUser = value,
+          );
+
+      // ini untuk mengecek status login user
+      final isSignIn = await _googleSignIn.isSignedIn();
+
+      if (isSignIn) {
+        // kondisi login berhasil
+        debugPrint('SUDAH BERHASIL LOGIN DENGAN AKUN :');
+        debugPrint('$_currentUser');
 
         final googleAuth = await _currentUser!.authentication;
+
         final credential = GoogleAuthProvider.credential(
           idToken: googleAuth.idToken,
           accessToken: googleAuth.accessToken,
         );
 
-        userCredential = await FirebaseAuth.instance.signInWithCredential(
-          credential,
-        );
+        await FirebaseAuth.instance
+            .signInWithCredential(
+              credential,
+            )
+            .then(
+              (value) => userCredential = value,
+            );
 
         debugPrint(
-          'BERHASIL LOGIN KE FIREBASE AUTH: ${userCredential!.user!.uid}',
+          'USER CREDENTIAL',
+        );
+        debugPrint(
+          '$userCredential',
         );
 
-        // Simpan status skip intro
+        // simpan status user bahwa sudah pernah login & tidak akan menampilkan introduction kembali
         final box = GetStorage();
+        if (box.read('skipIntro') != null) {
+          box.remove('skipIntro');
+        }
         box.write('skipIntro', true);
 
-        // --- BLOK LOGIKA YANG DIPERBAIKI ---
-
+        // # masukkan data ke firebase
         CollectionReference users = firestore.collection('users');
+
         final checkUser = await users.doc(_currentUser!.email).get();
 
-        // Data timestamp untuk pengguna baru atau lama
-        String now = DateTime.now().toIso8601String();
-        String lastSignInTime = userCredential!.user!.metadata.lastSignInTime!
-            .toIso8601String();
-
-        if (!checkUser.exists) {
-          // PENGGUNA BARU: Buat dokumen baru di Firestore
+        if (checkUser.data() == null) {
           await users.doc(_currentUser!.email).set({
             "uid": userCredential!.user!.uid,
             "name": _currentUser!.displayName,
-            "keyName": _currentUser!.displayName!.substring(0, 1).toUpperCase(),
             "email": _currentUser!.email,
+            "creationTime":
+                userCredential!.user!.metadata.creationTime!.toIso8601String(),
+            "lastSignInTime": userCredential!.user!.metadata.lastSignInTime!
+                .toIso8601String(),
             "photoUrl": _currentUser!.photoUrl ?? "noimage",
             "status": "",
-            "creationTime": userCredential!.user!.metadata.creationTime!
-                .toIso8601String(),
-            "lastSignInTime": lastSignInTime,
-            "updatedTime": now,
+            "updatedTime": DateTime.now().toIso8601String(),
           });
+
           debugPrint("Data pengguna baru berhasil dibuat di Firestore.");
         } else {
-          // PERBAIKAN 1: Pengguna lama, update data waktu login terakhir
           await users.doc(_currentUser!.email).update({
-            "lastSignInTime": lastSignInTime,
-            "updatedTime": now,
+            "lastSignInTime": userCredential!.user!.metadata.lastSignInTime!
+                .toIso8601String(),
           });
           debugPrint("Data pengguna lama berhasil diupdate.");
         }
 
-        // PERBAIKAN 2: Navigasi hanya dilakukan sekali di sini untuk pengguna baru & lama
+        // # Mengisi model dengan data user yang ada di Firestore.
+        final currentUser = await users.doc(_currentUser!.email).get();
+        final currentUserData = currentUser.data() as Map<String, dynamic>;
+
+        user = Usermodel(
+          uid: currentUserData["uid"],
+          name: currentUserData["name"],
+          email: currentUserData["email"],
+          photoUrl: currentUserData["photoUrl"],
+          status: currentUserData["status"],
+          creationTime: currentUserData["creationTime"],
+          lastSignInTime: currentUserData["lastSignInTime"],
+          updatedTime: currentUserData["updatedTime"],
+        );
+
         isAuth.value = true;
         Get.offAllNamed(Routes.HOME);
-
-        // --- AKHIR BLOK LOGIKA YANG DIPERBAIKI ---
       } else {
         debugPrint("Login Google dibatalkan oleh pengguna.");
       }
     } catch (e) {
       debugPrint("Terjadi error saat proses login: $e");
-      // Opsional: Tampilkan snackbar atau dialog jika terjadi error
       Get.snackbar(
         "Terjadi Kesalahan",
         "Tidak dapat login. Silakan coba lagi.",

@@ -56,7 +56,7 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.CHNGE_PROFILE,
-      page: () => const ChngeProfileView(),
+      page: () => ChngeProfileView(),
       binding: ChngeProfileBinding(),
     ),
   ];

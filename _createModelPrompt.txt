@@ -1,0 +1,5 @@
+Untuk membuat model general : 
+    get generate model with assets/models/user.json
+
+untuk membuat model tanpa provider
+    get generate model with assets/models/user.json --skipPovider
