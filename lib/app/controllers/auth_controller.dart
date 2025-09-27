@@ -15,9 +15,11 @@ class AuthController extends GetxController {
   GoogleSignInAccount? _currentUser;
   UserCredential? userCredential;
 
-  Usermodel user = Usermodel();
+  var user = Usermodel().obs;
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  // LOGIN
 
   Future<void> firstInitialize() async {
     await autoLogin().then((value) {
@@ -74,7 +76,7 @@ class AuthController extends GetxController {
         final currentUser = await users.doc(_currentUser!.email).get();
         final currentUserData = currentUser.data() as Map<String, dynamic>;
 
-        user = Usermodel(
+        user(Usermodel(
           uid: currentUserData["uid"],
           name: currentUserData["name"],
           email: currentUserData["email"],
@@ -83,7 +85,7 @@ class AuthController extends GetxController {
           creationTime: currentUserData["creationTime"],
           lastSignInTime: currentUserData["lastSignInTime"],
           updatedTime: currentUserData["updatedTime"],
-        );
+        ));
 
         return true;
       }
@@ -173,7 +175,8 @@ class AuthController extends GetxController {
         final currentUser = await users.doc(_currentUser!.email).get();
         final currentUserData = currentUser.data() as Map<String, dynamic>;
 
-        user = Usermodel(
+        // update model bertipe obx
+        user(Usermodel(
           uid: currentUserData["uid"],
           name: currentUserData["name"],
           email: currentUserData["email"],
@@ -182,7 +185,7 @@ class AuthController extends GetxController {
           creationTime: currentUserData["creationTime"],
           lastSignInTime: currentUserData["lastSignInTime"],
           updatedTime: currentUserData["updatedTime"],
-        );
+        ));
 
         isAuth.value = true;
         Get.offAllNamed(Routes.HOME);
@@ -203,5 +206,66 @@ class AuthController extends GetxController {
     await FirebaseAuth.instance.signOut();
     isAuth.value = false;
     Get.offAllNamed(Routes.LOGIN);
+  }
+
+// PROFILE
+
+  void changeProfile(String name, String status) {
+    String date = DateTime.now().toIso8601String();
+
+    CollectionReference users = firestore.collection('users');
+    users.doc(_currentUser!.email).update({
+      "name": name,
+      "status": status,
+      "lastSignInTime":
+          userCredential!.user!.metadata.lastSignInTime!.toIso8601String(),
+      "updatedTime": date
+    });
+
+    // update model
+    user.update(
+      (user) {
+        user!.name = name;
+        user.status = status;
+        user.lastSignInTime =
+            userCredential!.user!.metadata.lastSignInTime!.toIso8601String();
+        user.updatedTime = date;
+      },
+    );
+
+    user.refresh();
+    Get.snackbar(
+      "Berhasil Mengubah Profil",
+      "Profil berhasil diubah",
+    );
+  }
+
+  void updateStatus(String status) {
+    String date = DateTime.now().toIso8601String();
+
+    CollectionReference users = firestore.collection('users');
+
+    users.doc(_currentUser!.email).update({
+      "status": status,
+      "lastSignInTime":
+          userCredential!.user!.metadata.lastSignInTime!.toIso8601String(),
+      "updatedTime": date
+    });
+
+    // update model
+    user.update(
+      (user) {
+        user!.status = status;
+        user.lastSignInTime =
+            userCredential!.user!.metadata.lastSignInTime!.toIso8601String();
+        user.updatedTime = date;
+      },
+    );
+
+    user.refresh();
+    Get.snackbar(
+      "Berhasil Mengubah Status",
+      "Update status success",
+    );
   }
 }

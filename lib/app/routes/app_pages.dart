@@ -51,7 +51,7 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.UPDATE_STATUS,
-      page: () => const UpdateStatusView(),
+      page: () => UpdateStatusView(),
       binding: UpdateStatusBinding(),
     ),
     GetPage(

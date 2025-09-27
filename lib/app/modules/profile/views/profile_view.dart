@@ -25,36 +25,38 @@ class ProfileView extends GetView<ProfileController> {
             child: Column(
               children: [
                 AvatarGlow(
-                  endRadius: 110,
-                  glowColor: Colors.black,
-                  duration: Duration(seconds: 2),
-                  child: Container(
+                    endRadius: 110,
+                    glowColor: Colors.black,
+                    duration: Duration(seconds: 2),
+                    child: Container(
                       margin: EdgeInsets.all(15),
                       width: 175,
                       height: 175,
-                      child: ClipRRect(
-                        borderRadius: BorderRadiusGeometry.circular(200),
-                        child: authC.user.photoUrl == 'noimage'
-                            ? Image.asset(
-                                'assets/logo/noimage.png',
-                                fit: BoxFit.cover,
-                              )
-                            : ClipRRect(
-                                borderRadius: BorderRadius.circular(200),
-                                child: Image.network(
-                                  authC.user.photoUrl!,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                      )),
+                      child: Obx(() => ClipRRect(
+                            borderRadius: BorderRadiusGeometry.circular(200),
+                            child: authC.user.value.photoUrl == 'noimage'
+                                ? Image.asset(
+                                    'assets/logo/noimage.png',
+                                    fit: BoxFit.cover,
+                                  )
+                                : ClipRRect(
+                                    borderRadius: BorderRadius.circular(200),
+                                    child: Image.network(
+                                      authC.user.value.photoUrl!,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                          )),
+                    )),
+                Obx(
+                  () => Text(
+                    "${authC.user.value.name}",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
                 Text(
-                  "${authC.user.name}",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                Text(
-                  "${authC.user.email}",
+                  "${authC.user.value.email}",
                   style: TextStyle(fontSize: 20),
                   textAlign: TextAlign.center,
                 ),
