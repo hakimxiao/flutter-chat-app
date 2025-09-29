@@ -1,4 +1,4 @@
-import 'package:chatapp/app/data/models/user_model.dart';
+import 'package:chatapp/app/data/models/users_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
@@ -15,7 +15,7 @@ class AuthController extends GetxController {
   GoogleSignInAccount? _currentUser;
   UserCredential? userCredential;
 
-  var user = Usermodel().obs;
+  var user = UsersModel().obs;
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
@@ -76,9 +76,10 @@ class AuthController extends GetxController {
         final currentUser = await users.doc(_currentUser!.email).get();
         final currentUserData = currentUser.data() as Map<String, dynamic>;
 
-        user(Usermodel(
+        user(UsersModel(
           uid: currentUserData["uid"],
           name: currentUserData["name"],
+          keyName: currentUserData["keyName"],
           email: currentUserData["email"],
           photoUrl: currentUserData["photoUrl"],
           status: currentUserData["status"],
@@ -152,6 +153,7 @@ class AuthController extends GetxController {
           await users.doc(_currentUser!.email).set({
             "uid": userCredential!.user!.uid,
             "name": _currentUser!.displayName,
+            "keyName": _currentUser!.displayName!.substring(0, 1).toUpperCase(),
             "email": _currentUser!.email,
             "creationTime":
                 userCredential!.user!.metadata.creationTime!.toIso8601String(),
@@ -176,9 +178,10 @@ class AuthController extends GetxController {
         final currentUserData = currentUser.data() as Map<String, dynamic>;
 
         // update model bertipe obx
-        user(Usermodel(
+        user(UsersModel(
           uid: currentUserData["uid"],
           name: currentUserData["name"],
+          keyName: currentUserData["keyName"],
           email: currentUserData["email"],
           photoUrl: currentUserData["photoUrl"],
           status: currentUserData["status"],
@@ -216,6 +219,7 @@ class AuthController extends GetxController {
     CollectionReference users = firestore.collection('users');
     users.doc(_currentUser!.email).update({
       "name": name,
+      "keyName": name.substring(0, 1).toUpperCase(),
       "status": status,
       "lastSignInTime":
           userCredential!.user!.metadata.lastSignInTime!.toIso8601String(),
@@ -226,6 +230,7 @@ class AuthController extends GetxController {
     user.update(
       (user) {
         user!.name = name;
+        user.keyName = name.substring(0, 1).toUpperCase();
         user.status = status;
         user.lastSignInTime =
             userCredential!.user!.metadata.lastSignInTime!.toIso8601String();
