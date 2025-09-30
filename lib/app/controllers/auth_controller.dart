@@ -76,17 +76,7 @@ class AuthController extends GetxController {
         final currentUser = await users.doc(_currentUser!.email).get();
         final currentUserData = currentUser.data() as Map<String, dynamic>;
 
-        user(UsersModel(
-          uid: currentUserData["uid"],
-          name: currentUserData["name"],
-          keyName: currentUserData["keyName"],
-          email: currentUserData["email"],
-          photoUrl: currentUserData["photoUrl"],
-          status: currentUserData["status"],
-          creationTime: currentUserData["creationTime"],
-          lastSignInTime: currentUserData["lastSignInTime"],
-          updatedTime: currentUserData["updatedTime"],
-        ));
+        user(UsersModel.fromJson(currentUserData));
 
         return true;
       }
@@ -177,18 +167,7 @@ class AuthController extends GetxController {
         final currentUser = await users.doc(_currentUser!.email).get();
         final currentUserData = currentUser.data() as Map<String, dynamic>;
 
-        // update model bertipe obx
-        user(UsersModel(
-          uid: currentUserData["uid"],
-          name: currentUserData["name"],
-          keyName: currentUserData["keyName"],
-          email: currentUserData["email"],
-          photoUrl: currentUserData["photoUrl"],
-          status: currentUserData["status"],
-          creationTime: currentUserData["creationTime"],
-          lastSignInTime: currentUserData["lastSignInTime"],
-          updatedTime: currentUserData["updatedTime"],
-        ));
+        user(UsersModel.fromJson(currentUserData));
 
         isAuth.value = true;
         Get.offAllNamed(Routes.HOME);
