@@ -30,8 +30,8 @@ class MyApp extends StatelessWidget {
               title: "ChatApp",
               initialRoute: authC.isSkipIntro.isTrue
                   ? authC.isAuth.isTrue
-                        ? Routes.HOME
-                        : Routes.LOGIN
+                      ? Routes.HOME
+                      : Routes.LOGIN
                   : Routes.INTRODUCTION,
               getPages: AppPages.routes,
             ),

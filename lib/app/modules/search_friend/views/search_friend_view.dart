@@ -94,7 +94,8 @@ class SearchFriendView extends GetView<SearchFriendController> {
                           TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                     ),
                     trailing: GestureDetector(
-                      onTap: () => Get.toNamed(Routes.CHAT_ROOM),
+                      onTap: () => authC.addNewConnection(
+                          controller.tempSearch[index]["email"]),
                       child: Chip(label: Text("Message")),
                     ),
                   ),
