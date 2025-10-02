@@ -1,5 +1,4 @@
 import 'package:chatapp/app/controllers/auth_controller.dart';
-import 'package:chatapp/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';

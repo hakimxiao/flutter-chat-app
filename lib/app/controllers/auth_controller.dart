@@ -1,4 +1,3 @@
-import 'package:chatapp/app/data/models/chats_model.dart';
 import 'package:chatapp/app/data/models/users_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -257,36 +256,72 @@ class AuthController extends GetxController {
 // SEARCH
 
   void addNewConnection(String friendEmail) async {
+    bool flagNewConnection = false;
     String date = DateTime.now().toIso8601String();
-
     CollectionReference chats = firestore.collection('chats');
-    final newChatDoc = await chats.add({
-      "connection": [_currentUser!.email, friendEmail],
-      "total_chats": 0,
-      "total_read": 0,
-      "total_unread": 0,
-      "chat": [],
-      "lastTime": date
-    });
-
     CollectionReference users = firestore.collection('users');
-    await users.doc(_currentUser!.email).update({
-      "chats": [
-        {"connection": friendEmail, "chat_id": newChatDoc.id, "lastTime": date}
-      ]
-    });
 
-    user.update(
-      (user) {
-        user!.chats = [
-          ChatUser(
-              chatId: newChatDoc.id, connection: friendEmail, lastTime: date)
-        ];
-      },
-    );
+    var chat_id;
+    final docUser = await users.doc(_currentUser!.email).get();
+    final docChat = (docUser.data() as Map<String, dynamic>)["chats"] as List;
 
-    user.refresh();
+    if (docChat.isNotEmpty) {
+      // * User pernah chat
+      for (var singleChat in docChat) {
+        if (singleChat["connection"] == friendEmail) {
+          chat_id = singleChat["chat_id"];
+        }
+      }
 
-    Get.toNamed(Routes.CHAT_ROOM);
+      if (chat_id != null) {
+        // * User sudah pernah chat dengan friendEmail ini
+        flagNewConnection = false;
+      } else {
+        // * User belum pernah chat dengan friendEmail ini
+        // @_buat koneksi :
+        flagNewConnection = true;
+      }
+    } else {
+      // * User belum pernah chat
+      // @_buat koneksi :
+      flagNewConnection = true;
+    }
+
+    if (flagNewConnection == true) {
+      final newChatDoc = await chats.add({
+        "connection": [_currentUser!.email, friendEmail],
+        "total_chats": 0,
+        "total_read": 0,
+        "total_unread": 0,
+        "chat": [],
+        "lastTime": date
+      });
+
+      await users.doc(_currentUser!.email).update({
+        "chats": [
+          {
+            "connection": friendEmail,
+            "chat_id": newChatDoc.id,
+            "lastTime": date
+          }
+        ]
+      });
+
+      user.update(
+        (user) {
+          user!.chats = [
+            ChatUser(
+                chatId: newChatDoc.id, connection: friendEmail, lastTime: date)
+          ];
+        },
+      );
+
+      chat_id = newChatDoc.id;
+      user.refresh();
+    }
+
+    print("CHAT ID : $chat_id");
+
+    Get.toNamed(Routes.CHAT_ROOM, arguments: chat_id);
   }
 }
