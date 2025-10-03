@@ -288,36 +288,76 @@ class AuthController extends GetxController {
     }
 
     if (flagNewConnection == true) {
-      final newChatDoc = await chats.add({
-        "connection": [_currentUser!.email, friendEmail],
-        "total_chats": 0,
-        "total_read": 0,
-        "total_unread": 0,
-        "chat": [],
-        "lastTime": date
-      });
+      // @_Cek dari chats collection : Apakah ada dokumen yang koneksinya antara mereka berdua (handle agar pelaku dan korban sama sama terhubung)
+      final chatsDoc = await chats.where("connection", whereIn: [
+        [_currentUser!.email, friendEmail],
+        [friendEmail, _currentUser!.email]
+      ]).get();
 
-      await users.doc(_currentUser!.email).update({
-        "chats": [
-          {
-            "connection": friendEmail,
-            "chat_id": newChatDoc.id,
-            "lastTime": date
-          }
-        ]
-      });
+      if (chatsDoc.docs.isNotEmpty) {
+        // 1. Jika ada data || Sudah terkoneksi || Jangan buat baru
+        final chatDataId = chatsDoc.docs[0].id;
+        final chatsData = chatsDoc.docs[0].data() as Map<String, dynamic>;
 
-      user.update(
-        (user) {
-          user!.chats = [
-            ChatUser(
-                chatId: newChatDoc.id, connection: friendEmail, lastTime: date)
-          ];
-        },
-      );
+        await users.doc(_currentUser!.email).update({
+          "chats": [
+            {
+              "connection": friendEmail,
+              "chat_id": chatDataId,
+              "lastTime": chatsData["lastTime"]
+            }
+          ]
+        });
 
-      chat_id = newChatDoc.id;
-      user.refresh();
+        user.update(
+          (user) {
+            user!.chats = [
+              ChatUser(
+                  chatId: chatDataId,
+                  connection: friendEmail,
+                  lastTime: chatsData["lastTime"])
+            ];
+          },
+        );
+
+        chat_id = chatDataId;
+
+        user.refresh();
+      } else {
+        // 2. Jika tidak ada data || Belum terkoneksi || Buat baru
+        final newChatDoc = await chats.add({
+          "connection": [_currentUser!.email, friendEmail],
+          "total_chats": 0,
+          "total_read": 0,
+          "total_unread": 0,
+          "chat": [],
+          "lastTime": date
+        });
+
+        await users.doc(_currentUser!.email).update({
+          "chats": [
+            {
+              "connection": friendEmail,
+              "chat_id": newChatDoc.id,
+              "lastTime": date
+            }
+          ]
+        });
+
+        user.update(
+          (user) {
+            user!.chats = [
+              ChatUser(
+                  chatId: newChatDoc.id,
+                  connection: friendEmail,
+                  lastTime: date)
+            ];
+          },
+        );
+
+        chat_id = newChatDoc.id;
+        user.refresh();
+      }
     }
 
     print("CHAT ID : $chat_id");
