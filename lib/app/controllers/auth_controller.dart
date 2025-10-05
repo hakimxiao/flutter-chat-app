@@ -304,14 +304,18 @@ class AuthController extends GetxController {
         docChat.add({
           "connection": friendEmail,
           "chat_id": chatDataId,
-          "lastTime": chatsData["lastTime"]
+          "lastTime": chatsData["lastTime"],
+          "total_unread": 0
         });
 
         await users.doc(_currentUser!.email).update({"chats": docChat});
 
         user.update(
           (user) {
-            user!.chats = docChat as List<ChatUser>;
+            user!.chats = docChat
+                .map((chatData) =>
+                    ChatUser.fromJson(chatData as Map<String, dynamic>))
+                .toList();
           },
         );
 
@@ -322,24 +326,25 @@ class AuthController extends GetxController {
         // 2. Jika tidak ada data || Belum terkoneksi || Buat baru
         final newChatDoc = await chats.add({
           "connection": [_currentUser!.email, friendEmail],
-          "total_chats": 0,
-          "total_read": 0,
-          "total_unread": 0,
           "chat": [],
-          "lastTime": date
+          "lastTime": date,
         });
 
         docChat.add({
           "connection": friendEmail,
           "chat_id": newChatDoc.id,
-          "lastTime": date
+          "lastTime": date,
+          "total_unread": 0
         });
 
         await users.doc(_currentUser!.email).update({"chats": docChat});
 
         user.update(
           (user) {
-            user!.chats = docChat as List<ChatUser>;
+            user!.chats = docChat
+                .map((chatData) =>
+                    ChatUser.fromJson(chatData as Map<String, dynamic>))
+                .toList();
           },
         );
 
