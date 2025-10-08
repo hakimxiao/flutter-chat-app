@@ -54,35 +54,100 @@ class HomeView extends GetView<HomeController> {
           Expanded(
             child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
               stream: controller.chatsStream(authC.user.value.email!),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.active) {
-                  var allChats = (snapshot.data!.data()
+              builder: (context, snapshot1) {
+                if (snapshot1.connectionState == ConnectionState.active) {
+                  var allChats = (snapshot1.data!.data()
                       as Map<String, dynamic>)["chats"] as List;
-                  print(snapshot.data!.data());
+                  print(snapshot1.data!.data());
                   return ListView.builder(
-                    padding: EdgeInsets.zero,
-                    itemCount: allChats.length,
-                    itemBuilder: (context, index) => ListTile(
-                      onTap: () => Get.toNamed(Routes.CHAT_ROOM),
-                      leading: CircleAvatar(
-                        radius: 30,
-                        backgroundColor: Colors.black26,
-                        child: Image.asset('assets/logo/noimage.png',
-                            fit: BoxFit.cover),
-                      ),
-                      title: Text(
-                        'Orang ke-${index + 1}',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: Text(
-                        'Status Orang ke-${index + 1}',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w600),
-                      ),
-                      trailing: Chip(label: Text("3")),
-                    ),
-                  );
+                      padding: EdgeInsets.zero,
+                      itemCount: allChats.length,
+                      itemBuilder: (context, index) {
+                        return StreamBuilder<
+                            DocumentSnapshot<Map<String, dynamic>>>(
+                          stream: controller
+                              .friendStream(allChats[index]["connection"]),
+                          builder: (context, snapshot2) {
+                            if (snapshot2.connectionState ==
+                                ConnectionState.active) {
+                              var data = snapshot2.data!.data();
+                              return data!["status"] == ""
+                                  ? ListTile(
+                                      onTap: () =>
+                                          Get.toNamed(Routes.CHAT_ROOM),
+                                      leading: CircleAvatar(
+                                          radius: 30,
+                                          backgroundColor: Colors.black26,
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadiusGeometry.circular(
+                                                    100),
+                                            child: data["photoUrl"] == "noimage"
+                                                ? Image.asset(
+                                                    'assets/logo/noimage.png',
+                                                    fit: BoxFit.cover)
+                                                : Image.network(
+                                                    data["photoUrl"]),
+                                          )),
+                                      title: Text(
+                                        '${data["name"]}',
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                      trailing: allChats[index]
+                                                  ["total_unread"] ==
+                                              0
+                                          ? SizedBox()
+                                          : Chip(
+                                              label: Text(
+                                                  "${allChats[index]["total_unread"]}")),
+                                    )
+                                  : ListTile(
+                                      onTap: () =>
+                                          Get.toNamed(Routes.CHAT_ROOM),
+                                      leading: CircleAvatar(
+                                          radius: 30,
+                                          backgroundColor: Colors.black26,
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadiusGeometry.circular(
+                                                    100),
+                                            child: data["photoUrl"] == "noimage"
+                                                ? Image.asset(
+                                                    'assets/logo/noimage.png',
+                                                    fit: BoxFit.cover)
+                                                : Image.network(
+                                                    data["photoUrl"]),
+                                          )),
+                                      title: Text(
+                                        '${data["name"]}',
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                      subtitle: Text(
+                                        '${data["status"]}',
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                      trailing: allChats[index]
+                                                  ["total_unread"] ==
+                                              0
+                                          ? SizedBox()
+                                          : Chip(
+                                              label: Text(
+                                                  "${allChats[index]["total_unread"]}")),
+                                    );
+                            } else {
+                              return Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+                          },
+                        );
+                      });
                 }
                 return Center(
                   child: CircularProgressIndicator(),
