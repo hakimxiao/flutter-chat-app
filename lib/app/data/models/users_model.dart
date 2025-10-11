@@ -44,10 +44,10 @@ class UsersModel {
         photoUrl: json["photoUrl"],
         status: json["status"],
         updatedTime: json["updatedTime"],
-        chats: json["chats"] == null
-            ? [] // Inisialisasi sebagai list kosong jika datanya tidak ada
-            : List<ChatUser>.from(
-                json["chats"].map((x) => ChatUser.fromJson(x))),
+        // chats: json["chats"] == null
+        //     ? [] // Inisialisasi sebagai list kosong jika datanya tidak ada
+        //     : List<ChatUser>.from(
+        //         json["chats"].map((x) => ChatUser.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {

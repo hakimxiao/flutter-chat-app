@@ -72,21 +72,12 @@ class AuthController extends GetxController {
         });
         debugPrint("Data pengguna lama berhasil diupdate.");
 
-        // # Mengisi model dengan data user yang ada di Firestore.
         final currentUser = await users.doc(_currentUser!.email).get();
         final currentUserData = currentUser.data() as Map<String, dynamic>;
 
-        user(UsersModel(
-          creationTime: currentUserData["creationTime"],
-          email: currentUserData["email"],
-          keyName: currentUserData["keyName"],
-          lastSignInTime: currentUserData["lastSignInTime"],
-          name: currentUserData["name"],
-          photoUrl: currentUserData["photoUrl"],
-          status: currentUserData["status"],
-          uid: currentUserData["uid"],
-          updatedTime: currentUserData["updatedTime"],
-        ));
+        user(UsersModel.fromJson(currentUserData));
+
+        user.refresh();
 
         final listChat =
             await users.doc(_currentUser!.email).collection("chats").get();
@@ -115,6 +106,8 @@ class AuthController extends GetxController {
             },
           );
         }
+
+        user.refresh();
 
         return true;
       }
@@ -201,21 +194,12 @@ class AuthController extends GetxController {
           debugPrint("Data pengguna lama berhasil diupdate.");
         }
 
-        // # Mengisi model dengan data user yang ada di Firestore.
         final currentUser = await users.doc(_currentUser!.email).get();
         final currentUserData = currentUser.data() as Map<String, dynamic>;
 
-        user(UsersModel(
-          creationTime: currentUserData["creationTime"],
-          email: currentUserData["email"],
-          keyName: currentUserData["keyName"],
-          lastSignInTime: currentUserData["lastSignInTime"],
-          name: currentUserData["name"],
-          photoUrl: currentUserData["photoUrl"],
-          status: currentUserData["status"],
-          uid: currentUserData["uid"],
-          updatedTime: currentUserData["updatedTime"],
-        ));
+        user(UsersModel.fromJson(currentUserData));
+
+        user.refresh();
 
         final listChat =
             await users.doc(_currentUser!.email).collection("chats").get();
@@ -244,6 +228,8 @@ class AuthController extends GetxController {
             },
           );
         }
+
+        user.refresh();
 
         isAuth.value = true;
         Get.offAllNamed(Routes.HOME);
