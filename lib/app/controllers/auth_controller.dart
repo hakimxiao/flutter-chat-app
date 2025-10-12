@@ -1,3 +1,5 @@
+// ignore_for_file: await_only_futures
+
 import 'package:chatapp/app/data/models/users_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -253,7 +255,6 @@ class AuthController extends GetxController {
   }
 
 // PROFILE
-
   void changeProfile(String name, String status) {
     String date = DateTime.now().toIso8601String();
 
@@ -316,7 +317,6 @@ class AuthController extends GetxController {
   }
 
 // SEARCH
-
   void addNewConnection(String friendEmail) async {
     bool flagNewConnection = false;
     var chat_id;
@@ -335,22 +335,16 @@ class AuthController extends GetxController {
           .get();
 
       if (checkConnection.docs.isNotEmpty) {
-        // * User sudah pernah chat dengan friendEmail ini
         flagNewConnection = false;
-        // chat_id from chats collection
+
         chat_id = checkConnection.docs[0].id;
       } else {
-        // * User belum pernah chat
-        // @_buat koneksi :
         flagNewConnection = true;
       }
     } else {
-      // * User belum pernah chat dengan friendEmail ini
-      // @_buat koneksi :
       flagNewConnection = true;
     }
 
-    // FIX
     if (flagNewConnection == true) {
       final chatsDoc = await chats.where("connection", whereIn: [
         [_currentUser!.email, friendEmail],
@@ -405,8 +399,9 @@ class AuthController extends GetxController {
       } else {
         final newChatDoc = await chats.add({
           "connection": [_currentUser!.email, friendEmail],
-          "chat": [],
         });
+
+        await chats.doc(newChatDoc.id).collection("chat");
 
         await users
             .doc(_currentUser!.email)
@@ -451,6 +446,7 @@ class AuthController extends GetxController {
       }
     }
 
-    Get.toNamed(Routes.CHAT_ROOM, arguments: chat_id);
+    Get.toNamed(Routes.CHAT_ROOM,
+        arguments: {"chat_id": chat_id, "friendEmail": friendEmail});
   }
 }

@@ -41,7 +41,7 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.CHAT_ROOM,
-      page: () => const ChatRoomView(),
+      page: () => ChatRoomView(),
       binding: ChatRoomBinding(),
     ),
     GetPage(

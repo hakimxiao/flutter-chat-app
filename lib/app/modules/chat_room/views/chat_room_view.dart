@@ -1,3 +1,6 @@
+// ignore_for_file: deprecated_member_use
+
+import 'package:chatapp/app/controllers/auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart' as foundation;
@@ -7,7 +10,9 @@ import 'package:get/get.dart';
 import '../controllers/chat_room_controller.dart';
 
 class ChatRoomView extends GetView<ChatRoomController> {
-  const ChatRoomView({super.key});
+  ChatRoomView({super.key});
+
+  final authC = Get.find<AuthController>();
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +107,10 @@ class ChatRoomView extends GetView<ChatRoomController> {
                     borderRadius: BorderRadius.circular(100),
                     color: Colors.purple[100],
                     child: InkWell(
-                      onTap: () {},
+                      onTap: () => controller.newChat(
+                          authC.user.value.email!,
+                          Get.arguments as Map<String, dynamic>,
+                          controller.chatC.text),
                       child: const Padding(
                         padding: EdgeInsets.all(13),
                         child: Icon(Icons.send),
@@ -129,8 +137,7 @@ class ChatRoomView extends GetView<ChatRoomController> {
                       checkPlatformCompatibility: true,
                       emojiViewConfig: EmojiViewConfig(
                         // Issue: https://github.com/flutter/flutter/issues/28894
-                        emojiSizeMax:
-                            28 *
+                        emojiSizeMax: 28 *
                             (foundation.defaultTargetPlatform ==
                                     TargetPlatform.iOS
                                 ? 1.2
@@ -164,9 +171,8 @@ class ItemChat extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
       alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
       child: Column(
-        crossAxisAlignment: isSender
-            ? CrossAxisAlignment.end
-            : CrossAxisAlignment.start,
+        crossAxisAlignment:
+            isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           Container(
             decoration: BoxDecoration(
