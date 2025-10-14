@@ -1,4 +1,4 @@
-// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: non_constant_identifier_names, unused_local_variable, await_only_futures
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
@@ -48,32 +48,27 @@ class ChatRoomController extends GetxController {
         .get();
 
     if (checkChatsFriend.exists) {
-      await users
-          .doc(argument["friendEmail"])
-          .collection("chats")
+      final checkTotalUnread = await chats
           .doc(argument["chat_id"])
-          .get()
-          .then(
-            (value) => total_unread = value.data()!["total_unread"] as int,
-          );
+          .collection("chat")
+          .where("isRead", isEqualTo: false)
+          .where("pengirim", isEqualTo: email)
+          .get();
 
-      // update : for friend
+      // total unread for => friend
+      total_unread = checkTotalUnread.docs.length;
+
       await users
           .doc(argument["friendEmail"])
           .collection("chats")
           .doc(argument["chat_id"])
-          .update({"lastTime": date, "total_unread": total_unread + 1});
+          .update({"lastTime": date, "total_unread": total_unread});
     } else {
-      // new : for friend
       await users
           .doc(argument["friendEmail"])
           .collection("chats")
           .doc(argument["chat_id"])
-          .set({
-        "connectedWith": email,
-        "lastTime": date,
-        "total_unread": total_unread + 1
-      });
+          .set({"connection": email, "lastTime": date, "total_unread": 1});
     }
   }
 
