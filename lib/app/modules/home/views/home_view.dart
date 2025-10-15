@@ -73,12 +73,10 @@ class HomeView extends GetView<HomeController> {
                                   ? ListTile(
                                       contentPadding: EdgeInsets.symmetric(
                                           vertical: 5, horizontal: 20),
-                                      onTap: () => Get.toNamed(Routes.CHAT_ROOM,
-                                          arguments: {
-                                            "chat_id": listDocsChats[index].id,
-                                            "friendEmail": listDocsChats[index]
-                                                ["connection"]
-                                          }),
+                                      onTap: () => controller.goToChatRoom(
+                                          listDocsChats[index].id,
+                                          authC.user.value.email!,
+                                          listDocsChats[index]["connection"]),
                                       leading: CircleAvatar(
                                           radius: 30,
                                           backgroundColor: Colors.black26,
@@ -113,12 +111,10 @@ class HomeView extends GetView<HomeController> {
                                   : ListTile(
                                       contentPadding: EdgeInsets.symmetric(
                                           vertical: 5, horizontal: 20),
-                                      onTap: () => Get.toNamed(Routes.CHAT_ROOM,
-                                          arguments: {
-                                            "chat_id": listDocsChats[index].id,
-                                            "friendEmail": listDocsChats[index]
-                                                ["connection"]
-                                          }),
+                                      onTap: () => controller.goToChatRoom(
+                                          listDocsChats[index].id,
+                                          authC.user.value.email!,
+                                          listDocsChats[index]["connection"]),
                                       leading: CircleAvatar(
                                           radius: 30,
                                           backgroundColor: Colors.black26,
