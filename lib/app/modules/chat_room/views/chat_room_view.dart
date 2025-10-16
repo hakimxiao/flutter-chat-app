@@ -1,6 +1,7 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: deprecated_member_use, non_constant_identifier_names, avoid_print
 
 import 'package:chatapp/app/controllers/auth_controller.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart' as foundation;
@@ -13,6 +14,7 @@ class ChatRoomView extends GetView<ChatRoomController> {
   ChatRoomView({super.key});
 
   final authC = Get.find<AuthController>();
+  final String chat_id = (Get.arguments as Map<String, dynamic>)["chat_id"];
 
   @override
   Widget build(BuildContext context) {
@@ -61,16 +63,39 @@ class ChatRoomView extends GetView<ChatRoomController> {
         },
         child: Column(
           children: [
+            // GANTI BAGIAN INI
             Expanded(
-              child: SizedBox(
-                child: ListView(
-                  children: const [
-                    ItemChat(isSender: true),
-                    ItemChat(isSender: false),
-                  ],
-                ),
+              child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                stream: controller.streamChats(chat_id),
+                builder: (context, snapshot) {
+                  // 1. Tampilkan loading jika data belum siap
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
+                  // 2. (Opsional tapi direkomendasikan) Tampilkan pesan jika tidak ada chat
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Center(
+                      child: Text("Belum ada pesan."),
+                    );
+                  }
+
+                  // 3. Jika data sudah ada, baru tampilkan list chat
+                  var allData = snapshot.data!.docs;
+                  return ListView.builder(
+                      itemCount: allData.length,
+                      itemBuilder: (context, index) => ItemChat(
+                          isSender: allData[index]["pengirim"] ==
+                                  authC.user.value.email
+                              ? true
+                              : false,
+                          message: allData[index]["msg"]));
+                },
               ),
             ),
+            // SAMPAI SINI
             Container(
               margin: EdgeInsets.only(
                 bottom: controller.isShowEmoji.isTrue
@@ -161,9 +186,10 @@ class ChatRoomView extends GetView<ChatRoomController> {
 }
 
 class ItemChat extends StatelessWidget {
-  const ItemChat({super.key, required this.isSender});
+  const ItemChat({super.key, required this.isSender, required this.message});
 
   final bool isSender;
+  final String message;
 
   @override
   Widget build(BuildContext context) {
@@ -190,8 +216,8 @@ class ItemChat extends StatelessWidget {
               color: Colors.deepPurpleAccent[200],
             ),
             padding: const EdgeInsets.all(15),
-            child: const Text(
-              'hsdhaeuhueafuyieg',
+            child: Text(
+              message,
               style: TextStyle(color: Colors.white),
             ),
           ),
