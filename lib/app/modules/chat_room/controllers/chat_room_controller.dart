@@ -1,5 +1,7 @@
 // ignore_for_file: non_constant_identifier_names, unused_local_variable, await_only_futures
 
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
@@ -13,11 +15,18 @@ class ChatRoomController extends GetxController {
 
   late FocusNode focusNode;
   late TextEditingController chatC;
+  late ScrollController scrollC;
 
   Stream<QuerySnapshot<Map<String, dynamic>>> streamChats(String chat_id) {
     CollectionReference chats = firestore.collection("chats");
 
     return chats.doc(chat_id).collection("chat").orderBy("time").snapshots();
+  }
+
+  Stream<DocumentSnapshot<Object?>> streamFriendData(String friendEmail) {
+    CollectionReference users = firestore.collection("users");
+
+    return users.doc(friendEmail).snapshots();
   }
 
   void addEmojiToChat(Emoji emoji) {
@@ -29,19 +38,25 @@ class ChatRoomController extends GetxController {
   }
 
   void newChat(String email, Map<String, dynamic> argument, String chat) async {
+    if (chat == "" || chat == " ") return;
+
     CollectionReference chats = firestore.collection("chats");
     CollectionReference users = firestore.collection("users");
 
     String date = DateTime.now().toIso8601String();
 
-    final newChat =
-        await chats.doc(argument["chat_id"]).collection("chat").add({
+    await chats.doc(argument["chat_id"]).collection("chat").add({
       "pengirim": email,
       "penerima": argument["friendEmail"],
       "msg": chat,
       "time": date,
       "isRead": false
     });
+
+    Timer(
+        Duration.zero, () => scrollC.jumpTo(scrollC.position.maxScrollExtent));
+
+    chatC.clear();
 
     await users.doc(email).collection("chats").doc(argument["chat_id"]).update({
       "lastTime": date,
@@ -76,13 +91,12 @@ class ChatRoomController extends GetxController {
           .doc(argument["chat_id"])
           .set({"connection": email, "lastTime": date, "total_unread": 1});
     }
-
-    chatC.clear();
   }
 
   @override
   void onInit() {
     chatC = TextEditingController();
+    scrollC = ScrollController();
     focusNode = FocusNode();
     focusNode.addListener(() {
       if (focusNode.hasFocus) {
@@ -95,6 +109,7 @@ class ChatRoomController extends GetxController {
   @override
   void dispose() {
     chatC.dispose();
+    scrollC.dispose();
     focusNode.dispose();
     super.dispose();
   }
