@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 class ChatRoomController extends GetxController {
   var isShowEmoji = false.obs;
@@ -50,7 +51,8 @@ class ChatRoomController extends GetxController {
       "penerima": argument["friendEmail"],
       "msg": chat,
       "time": date,
-      "isRead": false
+      "isRead": false,
+      "groupTime": DateFormat.yMMMMd('en-US').format(DateTime.parse(date))
     });
 
     Timer(

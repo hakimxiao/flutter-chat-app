@@ -9,6 +9,7 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart' as foundation;
 
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 import '../controllers/chat_room_controller.dart';
 
@@ -149,13 +150,54 @@ class ChatRoomView extends GetView<ChatRoomController> {
                   return ListView.builder(
                       controller: controller.scrollC,
                       itemCount: allData.length,
-                      itemBuilder: (context, index) => ItemChat(
-                          isSender: allData[index]["pengirim"] ==
-                                  authC.user.value.email
-                              ? true
-                              : false,
-                          time: allData[index]["time"],
-                          message: allData[index]["msg"]));
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          return Column(
+                            children: [
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Text(
+                                allData[index]["groupTime"],
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              ItemChat(
+                                  isSender: allData[index]["pengirim"] ==
+                                          authC.user.value.email
+                                      ? true
+                                      : false,
+                                  time: allData[index]["time"],
+                                  message: allData[index]["msg"]),
+                            ],
+                          );
+                        } else {
+                          if (allData[index]["groupTime"] ==
+                              allData[index - 1]["groupTime"]) {
+                            return ItemChat(
+                                isSender: allData[index]["pengirim"] ==
+                                        authC.user.value.email
+                                    ? true
+                                    : false,
+                                time: allData[index]["time"],
+                                message: allData[index]["msg"]);
+                          } else {
+                            return Column(
+                              children: [
+                                Text(allData[index]["groupTime"],
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                                ItemChat(
+                                    isSender: allData[index]["pengirim"] ==
+                                            authC.user.value.email
+                                        ? true
+                                        : false,
+                                    time: allData[index]["time"],
+                                    message: allData[index]["msg"]),
+                              ],
+                            );
+                          }
+                        }
+                      });
                 },
               ),
             ),
@@ -296,7 +338,7 @@ class ItemChat extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 5),
-          Text(time),
+          Text(DateFormat.jm().format(DateTime.parse(time))),
         ],
       ),
     );
