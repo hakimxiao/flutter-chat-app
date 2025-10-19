@@ -1,16 +1,48 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ChngeProfileController extends GetxController {
   late TextEditingController emailC;
   late TextEditingController nameC;
   late TextEditingController statusC;
+  late ImagePicker imagePicker;
+
+  // ignore: avoid_init_to_null
+  XFile? pickedImage = null;
+
+  void resetImage() {
+    pickedImage = null;
+    update();
+  }
+
+  void selectImage() async {
+    try {
+      final checkDataImage =
+          await imagePicker.pickImage(source: ImageSource.gallery);
+
+      if (checkDataImage != null) {
+        print(checkDataImage.name);
+        print(checkDataImage.path);
+        pickedImage = checkDataImage;
+        update();
+      }
+    } catch (e) {
+      print(e);
+      pickedImage = null;
+      update();
+    }
+  }
 
   @override
   void onInit() {
     emailC = TextEditingController(text: 'LoremIpsum@gmail.com');
     nameC = TextEditingController(text: 'Lorem Ipsum');
     statusC = TextEditingController();
+    imagePicker = ImagePicker();
+
     super.onInit();
   }
 

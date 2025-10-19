@@ -45,6 +45,7 @@ dependencies:
   get_storage: ^2.1.1
   cloud_firestore: ^6.0.2
   intl: ^0.20.2
+  image_picker: ^1.2.0
 
 dev_dependencies:
   flutter_test:
