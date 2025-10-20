@@ -151,7 +151,7 @@ class ChngeProfileView extends GetView<ChngeProfileController> {
                                   ),
                                 ),
                                 TextButton(
-                                  onPressed: () => controller.selectImage(),
+                                  onPressed: () => controller.uploadImage(),
                                   child: Text(
                                     'Upload',
                                     style:

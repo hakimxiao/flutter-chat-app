@@ -13,6 +13,15 @@ class ChngeProfileController extends GetxController {
   // ignore: avoid_init_to_null
   XFile? pickedImage = null;
 
+  void uploadImage() {
+    if (pickedImage != null) {
+      print(pickedImage!.name);
+      print(pickedImage!.path);
+      print(
+          "Image uploaded || FITUR FIRERBASE STRORAGE BERBAYAR MAKANYA KITA PAKAI PRINT SAJA");
+    }
+  }
+
   void resetImage() {
     pickedImage = null;
     update();
